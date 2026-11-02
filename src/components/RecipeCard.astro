@@ -1,0 +1,81 @@
+---
+import type { Recipe } from '../types/recipe';
+
+interface Props {
+  recipe: Recipe;
+}
+
+const { recipe } = Astro.props;
+const totalTime = recipe.time.prep_min + recipe.time.cook_min;
+---
+
+<article
+  data-recipe-card
+  data-category={recipe.category}
+  class="group flex flex-col bg-surface-container-lowest border border-outline-variant hover:border-on-surface p-3 rounded transition-all duration-300"
+>
+  <a href={`/recetas/${recipe.slug}`} class="flex flex-col flex-1">
+    <!-- Image container with category badge -->
+    <div class="relative w-full aspect-[4/3] overflow-hidden rounded bg-surface-container-low mb-3">
+      <img
+        src={recipe.image.src}
+        alt={recipe.image.caption || recipe.title}
+        loading="lazy"
+        decoding="async"
+        style={`view-transition-name: recipe-img-${recipe.slug};`}
+        class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+      />
+      <span class="absolute top-2.5 left-2.5 bg-surface-container-lowest/90 backdrop-blur-sm px-2 py-0.5 rounded font-mono text-label-sm tracking-wider text-on-surface uppercase border border-outline-variant">
+        {recipe.category}
+      </span>
+
+      <!-- Botón de edición en modo administrador -->
+      <button
+        type="button"
+        data-edit-recipe
+        aria-label={`Editar ${recipe.title}`}
+        title="Editar receta"
+        class="admin-only absolute top-2.5 right-2.5 size-7 bg-surface-container-lowest/90 backdrop-blur-sm rounded flex items-center justify-center text-on-surface hover:text-primary hover:bg-surface-container-lowest border border-outline-variant transition-colors shadow-sm cursor-pointer z-10"
+      >
+        <span class="material-symbols-outlined text-sm">edit</span>
+      </button>
+    </div>
+
+    <!-- Title and content -->
+    <div class="flex flex-col flex-1 justify-between px-1 pb-1">
+      <div>
+        <h2 class="font-sans text-body-lg font-medium tracking-tight text-on-surface group-hover:text-primary transition-colors leading-snug">
+          {recipe.title}
+        </h2>
+      </div>
+
+      <!-- Card footer: Calculated total time & servings -->
+      <div class="mt-4 pt-3 border-t border-surface-container flex items-center justify-between font-mono text-label-sm text-outline">
+        <span class="inline-flex items-center gap-1.5">
+          <span class="size-1 rounded-full bg-on-surface/40"></span>
+          {totalTime} min
+        </span>
+        <span>
+          {recipe.servings} {recipe.servings === 1 ? 'porción' : 'porciones'}
+        </span>
+      </div>
+    </div>
+  </a>
+</article>
+
+<script>
+  function setupRecipeCardEdits() {
+    const editButtons = document.querySelectorAll<HTMLButtonElement>('[data-edit-recipe]');
+    editButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const card = btn.closest('[data-recipe-card]');
+        const title = card?.querySelector('h2')?.textContent?.trim() || 'receta';
+        alert(`Editar receta (Modo Administrador): ${title}`);
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', setupRecipeCardEdits);
+</script>

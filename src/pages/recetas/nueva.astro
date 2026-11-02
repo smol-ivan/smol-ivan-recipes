@@ -1,0 +1,360 @@
+---
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import RecipeNutrition from '../../components/RecipeNutrition.astro';
+import RecipeIngredients from '../../components/RecipeIngredients.astro';
+import RecipeSteps from '../../components/RecipeSteps.astro';
+import ChefNotes from '../../components/ChefNotes.astro';
+import { mockRecipes } from '../../data/mockRecipes';
+
+// Tomamos como base de previsualización la receta normalizada por defecto (Salmón glaseado)
+const previewRecipe = mockRecipes[0];
+---
+
+<PublicLayout title="Ingesta de Receta — Recetario Digital" description="Ingesta y normalización automatizada de recetas culinarias con IA.">
+  <main class="w-full max-w-5xl mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-10">
+    <!-- SECCIÓN 1: ENCABEZADO Y BREADCRUMB -->
+    <header class="flex flex-col border-b border-surface-container pb-8">
+      <nav aria-label="Ruta de navegación" class="flex items-center gap-2 mb-6 font-mono text-label-sm text-secondary uppercase tracking-wider">
+        <a class="inline-flex items-center gap-1 hover:text-primary transition-colors group" href="/">
+          <span class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          VOLVER AL ARCHIVO
+        </a>
+        <span class="text-outline-variant">/</span>
+        <a class="hover:text-primary transition-colors" href="/?admin=true">GESTIÓN DE ARCHIVO</a>
+        <span class="text-outline-variant">/</span>
+        <span class="text-on-surface font-bold">NUEVA RECETA</span>
+      </nav>
+
+      <div class="flex flex-col gap-2">
+        <div class="inline-flex items-center gap-2 font-mono text-label-sm text-secondary tracking-widest uppercase">
+          <span class="inline-block size-1.5 rounded-full bg-primary"></span>
+          INGESTA AUTOMATIZADA · VOL. 04
+        </div>
+        <h1 class="font-mono text-headline-xl text-on-surface font-extrabold tracking-tight">
+          Nueva receta
+        </h1>
+        <p class="text-secondary font-sans text-body-lg max-w-2xl mt-1 leading-relaxed">
+          Pega notas crudas, apuntes de cocina o sube una captura para normalizar estructura, tiempos y balance nutricional.
+        </p>
+      </div>
+    </header>
+
+    <!-- SECCIÓN 2: MÓDULO DE ENTRADA (SELECTOR DUAL Y ENTRADA DE DATOS) -->
+    <section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 md:p-8 flex flex-col gap-6 shadow-sm">
+      <!-- Selector de Modo de Entrada -->
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-surface-container pb-5">
+        <div class="inline-flex p-1 bg-surface-container-low rounded border border-outline-variant" role="tablist">
+          <button
+            id="tab-text"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            class="inline-flex items-center gap-2 px-4 py-2 font-mono text-label-md font-bold bg-primary text-on-primary rounded shadow-sm transition-all cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-sm">edit_note</span>
+            Pegar texto
+          </button>
+          <button
+            id="tab-image"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            class="inline-flex items-center gap-2 px-4 py-2 font-mono text-label-md text-secondary hover:text-on-surface rounded transition-colors cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-sm">image</span>
+            Subir captura
+          </button>
+        </div>
+
+        <div class="font-mono text-label-sm text-secondary flex items-center gap-4">
+          <span>PARSER V2.4 · NLP CULINARIO</span>
+        </div>
+      </div>
+
+      <!-- Modo 1: Área de Texto de Entrada -->
+      <div id="text-input-container" class="flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <label class="font-mono text-label-md uppercase tracking-wider text-on-surface font-bold" for="raw-recipe-input">
+            Texto crudo de notas o apuntes
+          </label>
+          <button
+            id="clear-btn"
+            type="button"
+            class="font-mono text-label-sm text-secondary hover:text-error transition-colors underline underline-offset-4 cursor-pointer"
+          >
+            Limpiar
+          </button>
+        </div>
+
+        <div class="relative">
+          <textarea
+            id="raw-recipe-input"
+            rows="8"
+            class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-4 font-sans text-body-md text-on-surface focus:border-primary focus:outline-none resize-y leading-relaxed transition-colors"
+          >Salmón glaseado con soya y jengibre fresco. Para 2 personas. 2 lomos de salmón (unos 400g), 45ml salsa soya, 30ml mirin, 15g jengibre rallado fino, 1 diente de ajo picado, 20g miel de abeja. Sal marina y pimienta. Acompañar con semillas de sésamo y cebollín.
+Preparación: secar la piel del salmón con papel absorbente 15 min antes. Mezclar soya, mirin, miel, ajo y jengibre en un bol. Dorar el salmón a fuego medio-alto por la piel 4-5 min hasta crocante. Voltear y bañar con la salsa reduciendo el fuego 2-3 min. Emplatar con sésamo y cebollín fresco.</textarea>
+          <div class="absolute bottom-3 right-3 bg-surface-container-lowest/90 backdrop-blur px-2 py-1 border border-outline-variant rounded font-mono text-label-sm text-secondary">
+            <span id="char-count">384</span> caracteres detectados
+          </div>
+        </div>
+      </div>
+
+      <!-- Modo 2: Zona de Carga de Captura (Oculta por defecto) -->
+      <div id="image-input-container" class="hidden flex-col gap-4">
+        <div class="border-2 border-dashed border-outline-variant rounded-lg p-8 sm:p-12 text-center flex flex-col items-center justify-center gap-3 bg-surface-container-low/40 hover:border-primary transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-4xl text-secondary">cloud_upload</span>
+          <div class="font-mono text-body-md font-bold text-on-surface">Arrastra una captura de receta aquí</div>
+          <div class="font-mono text-label-sm text-secondary">Formatos compatibles: PNG, JPG, WEBP o capturas de pantalla</div>
+          <input type="file" accept="image/*" class="hidden" id="image-file-input" />
+          <button
+            type="button"
+            onclick="document.getElementById('image-file-input')?.click();"
+            class="mt-2 px-4 py-2 border border-outline-variant rounded font-mono text-label-sm text-on-surface bg-surface-container-lowest hover:border-on-surface transition-colors uppercase cursor-pointer"
+          >
+            Examinar archivos
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Acción de Procesamiento -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2 border-t border-surface-container">
+        <div class="inline-flex items-center gap-2 font-mono text-label-sm text-on-surface">
+          <span class="inline-flex items-center justify-center size-5 rounded-full bg-surface-container-highest text-primary">
+            <span class="material-symbols-outlined text-xs">check</span>
+          </span>
+          <span id="process-status">Contenido listo para estructurar</span>
+        </div>
+
+        <button
+          id="process-btn"
+          type="button"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-6 py-3.5 bg-primary text-on-primary font-mono text-label-md font-bold tracking-widest rounded hover:opacity-90 active:scale-[0.99] transition-all uppercase cursor-pointer shadow-sm"
+        >
+          <span>PROCESAR CON IA</span>
+          <span class="material-symbols-outlined text-base">arrow_forward</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 3: VISTA PREVIA (RESULTADO PROCESADO) -->
+    <section class="flex flex-col gap-6" id="preview-section">
+      <!-- Banner de Estado de la Vista Previa -->
+      <div class="bg-surface-container-high border border-outline-variant rounded-lg px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="inline-flex items-center gap-2.5 font-mono text-label-md text-on-surface">
+          <span class="size-2 rounded-full bg-amber-500 animate-pulse"></span>
+          <span class="font-bold tracking-wider">VISTA PREVIA — SIN GUARDAR</span>
+          <span class="hidden md:inline text-secondary font-normal font-mono text-label-sm">
+            | La receta aún no ha sido persistida en el catálogo público.
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onclick="alert('Editor manual de metadatos abierto.');"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-outline font-mono text-label-sm text-on-surface rounded hover:bg-surface-container-lowest transition-colors uppercase cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-sm">edit</span>
+          EDITAR METADATOS MANUALMENTE
+        </button>
+      </div>
+
+      <!-- Ficha de Receta Estructurada (Layout Editorial Fiel al Recetario) -->
+      <article class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 md:p-10 flex flex-col gap-8 shadow-sm">
+        <!-- Encabezado de la Ficha & Escala -->
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 border-b border-surface-container pb-8">
+          <div class="flex flex-col gap-3 max-w-2xl">
+            <span class="font-mono text-label-sm text-secondary tracking-widest uppercase">
+              DOC. RECETA #0849 · {previewRecipe.category}
+            </span>
+            <h2 class="font-mono text-2xl md:text-4xl font-extrabold tracking-tight text-on-surface leading-snug">
+              {previewRecipe.title}
+            </h2>
+            <p class="font-sans text-body-md text-secondary leading-relaxed">
+              {previewRecipe.description}
+            </p>
+          </div>
+
+          <!-- Selector de Escala Visual -->
+          <div class="flex md:flex-col items-center md:items-end justify-between gap-2 shrink-0 p-3 bg-surface-container-low rounded border border-outline-variant">
+            <span class="font-mono text-label-sm text-secondary uppercase tracking-wider">ESCALA</span>
+            <div class="inline-flex items-center gap-1">
+              <span class="font-mono text-label-md font-bold text-on-surface bg-surface-container-lowest px-3 py-1 rounded border border-outline-variant">
+                1x
+              </span>
+              <span class="font-mono text-label-sm text-secondary">BASE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 1 de Metadatos -->
+        <div class="flex flex-wrap items-center gap-y-3 font-mono text-label-sm text-on-surface py-2 border-b border-surface-container">
+          <div class="flex items-center gap-2 pr-6">
+            <span class="text-secondary uppercase">TIEMPO:</span>
+            <span class="font-bold">{previewRecipe.time.prep_min + previewRecipe.time.cook_min} min</span>
+            <span class="text-secondary">({previewRecipe.time.prep_min}m prep · {previewRecipe.time.cook_min}m cocción)</span>
+          </div>
+
+          <span class="hidden sm:inline-block w-px h-4 bg-outline-variant mr-6"></span>
+
+          <div class="flex items-center gap-2 pr-6">
+            <span class="text-secondary uppercase">RENDIMIENTO:</span>
+            <span class="font-bold">{previewRecipe.servings} porciones</span>
+          </div>
+
+          <span class="hidden sm:inline-block w-px h-4 bg-outline-variant mr-6"></span>
+
+          <div class="flex items-center gap-2">
+            <span class="text-secondary uppercase">INDEX:</span>
+            <div class="inline-flex gap-1.5 text-primary">
+              {previewRecipe.tags.map((tag) => (
+                <span class="hover:underline cursor-pointer">#{tag}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 2 de Información Nutricional -->
+        <RecipeNutrition nutrition={previewRecipe.nutrition} />
+
+        <!-- Fotografía Asignada / Generada -->
+        <figure class="flex flex-col border border-outline-variant rounded overflow-hidden">
+          <div class="w-full h-80 sm:h-96 relative bg-surface-container">
+            <img
+              src={previewRecipe.image.src}
+              alt={previewRecipe.title}
+              class="w-full h-full object-cover"
+            />
+          </div>
+          <figcaption class="p-3 bg-surface-container-low border-t border-outline-variant font-mono text-label-sm text-secondary uppercase tracking-wider">
+            {previewRecipe.image.caption} · TEMP DE COCCIÓN INTERNA OBJETIVO: {previewRecipe.image.target_internal_temp_c}°C
+          </figcaption>
+        </figure>
+
+        <!-- Bloque 01: Ingredientes & Proporciones -->
+        <RecipeIngredients ingredientGroups={previewRecipe.ingredient_groups} />
+
+        <!-- Bloque 02: Procedimiento Paso a Paso -->
+        <RecipeSteps steps={previewRecipe.steps} />
+
+        <!-- Bloque 03: Notas Técnicas del Chef -->
+        <ChefNotes extras={previewRecipe.extras} />
+      </article>
+    </section>
+
+    <!-- SECCIÓN 4: BARRA DE ACCIONES FINALES INFERIOR -->
+    <footer class="sticky bottom-4 z-20 bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+      <div class="flex items-center gap-2 font-mono text-label-sm text-secondary">
+        <span class="size-2 rounded-full bg-emerald-500"></span>
+        <span>Estado: normalizado por IA · Listo para publicación inmediata</span>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 w-full sm:w-auto">
+        <button
+          id="discard-btn"
+          type="button"
+          class="px-5 py-2.5 font-mono text-label-sm text-secondary hover:text-on-surface border border-transparent hover:border-outline-variant rounded transition-all uppercase cursor-pointer"
+        >
+          DESCARTAR BORRADOR
+        </button>
+
+        <button
+          id="save-btn"
+          type="button"
+          class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-on-primary font-mono text-label-sm font-bold tracking-wider rounded hover:opacity-90 active:scale-[0.99] transition-all uppercase shadow cursor-pointer"
+        >
+          <span>GUARDAR RECETA EN EL ARCHIVO</span>
+          <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+      </div>
+    </footer>
+  </main>
+</PublicLayout>
+
+<script>
+  function setupRecipeIngest() {
+    const clearBtn = document.getElementById('clear-btn');
+    const textarea = document.getElementById('raw-recipe-input') as HTMLTextAreaElement | null;
+    const charCount = document.getElementById('char-count');
+    const tabText = document.getElementById('tab-text');
+    const tabImage = document.getElementById('tab-image');
+    const textContainer = document.getElementById('text-input-container');
+    const imageContainer = document.getElementById('image-input-container');
+    const processBtn = document.getElementById('process-btn');
+    const processStatus = document.getElementById('process-status');
+    const saveBtn = document.getElementById('save-btn');
+    const discardBtn = document.getElementById('discard-btn');
+
+    // Contador de caracteres
+    if (textarea && charCount) {
+      const updateCount = () => {
+        charCount.textContent = textarea.value.length.toString();
+      };
+      textarea.addEventListener('input', updateCount);
+    }
+
+    // Botón Limpiar
+    clearBtn?.addEventListener('click', () => {
+      if (textarea) {
+        textarea.value = '';
+        if (charCount) charCount.textContent = '0';
+        textarea.focus();
+      }
+    });
+
+    // Alternar pestañas Pegar texto vs Subir captura
+    tabText?.addEventListener('click', () => {
+      tabText.className = 'inline-flex items-center gap-2 px-4 py-2 font-mono text-label-md font-bold bg-primary text-on-primary rounded shadow-sm transition-all cursor-pointer';
+      tabImage?.classList.remove('bg-primary', 'text-on-primary', 'font-bold');
+      tabImage?.classList.add('text-secondary', 'hover:text-on-surface');
+      textContainer?.classList.remove('hidden');
+      imageContainer?.classList.add('hidden');
+    });
+
+    tabImage?.addEventListener('click', () => {
+      tabImage.className = 'inline-flex items-center gap-2 px-4 py-2 font-mono text-label-md font-bold bg-primary text-on-primary rounded shadow-sm transition-all cursor-pointer';
+      tabText?.classList.remove('bg-primary', 'text-on-primary', 'font-bold');
+      tabText?.classList.add('text-secondary', 'hover:text-on-surface');
+      textContainer?.classList.add('hidden');
+      imageContainer?.classList.remove('hidden');
+    });
+
+    // Simulación de procesamiento con IA
+    processBtn?.addEventListener('click', () => {
+      if (processBtn) {
+        processBtn.setAttribute('disabled', 'true');
+        processBtn.innerHTML = '<span>PROCESANDO ESTRUCTURA...</span>';
+      }
+      if (processStatus) {
+        processStatus.textContent = 'Analizando ingredientes y tiempos térmicos...';
+      }
+
+      setTimeout(() => {
+        if (processBtn) {
+          processBtn.removeAttribute('disabled');
+          processBtn.innerHTML = '<span>PROCESAR CON IA</span><span class="material-symbols-outlined text-base">arrow_forward</span>';
+        }
+        if (processStatus) {
+          processStatus.textContent = 'Contenido normalizado exitosamente';
+        }
+
+        const previewSection = document.getElementById('preview-section');
+        previewSection?.scrollIntoView({ behavior: 'smooth' });
+      }, 700);
+    });
+
+    // Guardar receta en el catálogo
+    saveBtn?.addEventListener('click', () => {
+      alert('¡Receta guardada exitosamente en el archivo personal!');
+      window.location.href = '/?admin=true';
+    });
+
+    // Descartar borrador
+    discardBtn?.addEventListener('click', () => {
+      if (confirm('¿Deseas descartar este borrador? Se perderán las modificaciones no guardadas.')) {
+        window.location.href = '/?admin=true';
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', setupRecipeIngest);
+</script>

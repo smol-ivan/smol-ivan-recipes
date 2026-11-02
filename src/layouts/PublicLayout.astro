@@ -1,0 +1,84 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Navbar from '../components/Navbar.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'RECETARIO — Archivo Culinario Minimalista',
+  description = 'Archivo culinario personal inspirado en la precisión editorial y el minimalismo suizo.',
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html class="light" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- Fuentes y Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Astro View Transitions -->
+    <ClientRouter />
+
+    <!-- Detección y sincronización de Modo Administrador -->
+    <script is:inline>
+      function initAdminState() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdminQuery = urlParams.get('admin');
+
+        if (isAdminQuery === 'true') {
+          localStorage.setItem('isAdmin', 'true');
+          document.cookie = 'admin=true; path=/; max-age=86400';
+          document.documentElement.setAttribute('data-admin-mode', 'true');
+        } else if (isAdminQuery === 'false') {
+          localStorage.removeItem('isAdmin');
+          document.cookie = 'admin=; path=/; max-age=0';
+          document.documentElement.removeAttribute('data-admin-mode');
+        } else {
+          const hasStorage = localStorage.getItem('isAdmin') === 'true';
+          const hasCookie = document.cookie.split('; ').some((row) => row.startsWith('admin=true'));
+          if (hasStorage || hasCookie) {
+            document.documentElement.setAttribute('data-admin-mode', 'true');
+          } else {
+            document.documentElement.removeAttribute('data-admin-mode');
+          }
+        }
+      }
+      initAdminState();
+      document.addEventListener('astro:page-load', initAdminState);
+    </script>
+  </head>
+  <body class="bg-background text-on-background min-h-screen font-sans antialiased flex flex-col selection:bg-primary selection:text-surface-container-lowest">
+    <Navbar currentPath={currentPath} />
+
+    <div class="flex-1 w-full">
+      <slot />
+    </div>
+
+    <footer class="mt-16 pt-6 pb-12 border-t border-surface-container text-center font-mono text-label-sm text-outline tracking-widest uppercase">
+      RECETARIO PERSONAL · EDICIÓN DIGITAL MINIMALISTA · 2025
+    </footer>
+  </body>
+</html>

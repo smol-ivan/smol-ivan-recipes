@@ -1,0 +1,118 @@
+---
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '/' } = Astro.props;
+---
+
+<header class="w-full bg-surface border-b border-surface-container">
+  <div class="max-w-[1200px] mx-auto px-6 md:px-12 py-3 flex items-center justify-between whitespace-nowrap">
+    <!-- Logo & Brand navigation -->
+    <div class="flex items-center gap-8">
+      <div class="flex items-center">
+        <a href="/" class="flex items-center gap-3 text-on-surface hover:text-primary transition-colors group">
+          <div class="size-4 shrink-0 text-primary">
+            <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" class="size-full">
+              <path
+                d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"
+                fill="currentColor"
+              ></path>
+            </svg>
+          </div>
+          <span class="font-mono text-lg font-bold leading-tight tracking-tight text-on-surface group-hover:text-primary">
+            RECETARIO
+          </span>
+        </a>
+        <button
+          type="button"
+          id="admin-logout-badge"
+          title="Modo Administrador activo (Click para cerrar sesión)"
+          class="admin-only font-mono text-label-sm tracking-widest uppercase px-2 py-0.5 rounded bg-primary text-on-primary font-medium ml-2 cursor-pointer hover:opacity-85 transition-opacity"
+        >
+          ADMIN
+        </button>
+      </div>
+
+      <nav aria-label="Navegación principal" class="hidden sm:flex items-center gap-8">
+        <a
+          href="/"
+          class={`text-sm font-medium transition-colors ${currentPath === '/' ? 'text-primary' : 'text-on-surface hover:text-primary'}`}
+        >
+          Índice
+        </a>
+        <a
+          href="#notas"
+          class="text-sm font-medium text-on-surface hover:text-primary transition-colors"
+        >
+          Notas
+        </a>
+        <a
+          href="#acerca"
+          class="text-sm font-medium text-on-surface hover:text-primary transition-colors"
+        >
+          Acerca
+        </a>
+      </nav>
+    </div>
+
+    <!-- Actions: Search & Utility Buttons -->
+    <div class="flex items-center justify-end gap-3 md:gap-6">
+      <!-- Search Input -->
+      <label class="flex items-stretch h-10 w-36 sm:w-60 rounded bg-surface-container-low overflow-hidden transition-all focus-within:ring-1 focus-within:ring-primary">
+        <span class="flex items-center justify-center pl-3.5 text-outline">
+          <svg class="size-4" fill="currentColor" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+          </svg>
+        </span>
+        <input
+          type="search"
+          placeholder="Buscar receta..."
+          aria-label="Buscar receta"
+          class="w-full bg-transparent border-none px-3 text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-0"
+        />
+      </label>
+
+      <!-- Bookmark Button -->
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label="Recetas guardadas"
+          title="Recetas guardadas"
+          class="size-10 flex items-center justify-center rounded bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-colors"
+        >
+          <svg class="size-5" fill="currentColor" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M192,24H96A16,16,0,0,0,80,40V56H64A16,16,0,0,0,48,72V224a8,8,0,0,0,12.65,6.51L112,193.83l51.36,36.68A8,8,0,0,0,176,224V184.69l19.35,13.82A8,8,0,0,0,208,192V40A16,16,0,0,0,192,24ZM160,208.46l-43.36-31a8,8,0,0,0-9.3,0L64,208.45V72h96Zm32-32L176,165V72a16,16,0,0,0-16-16H96V40h96Z"></path>
+          </svg>
+        </button>
+
+        <!-- Theme Toggle Button -->
+        <button
+          type="button"
+          aria-label="Cambiar tema"
+          title="Cambiar tema"
+          class="size-10 flex items-center justify-center rounded bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-colors"
+        >
+          <svg class="size-5" fill="currentColor" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  function setupAdminBadge() {
+    const badge = document.getElementById('admin-logout-badge');
+    badge?.addEventListener('click', () => {
+      if (confirm('¿Deseas salir del modo administrador?')) {
+        localStorage.removeItem('isAdmin');
+        document.cookie = 'admin=; path=/; max-age=0';
+        window.location.href = '/?admin=false';
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', setupAdminBadge);
+</script>

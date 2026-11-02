@@ -1,0 +1,145 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html class="light h-full" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Acceso al Archivo — Recetario Digital</title>
+    <meta name="description" content="Acceso al sistema de administración del archivo culinario personal." />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- View Transitions -->
+    <ClientRouter />
+  </head>
+
+  <body class="min-h-screen flex flex-col items-center justify-center bg-background text-on-background font-mono p-4 select-none selection:bg-primary selection:text-surface-container-lowest">
+    <main class="w-full max-w-sm">
+      <!-- Tarjeta de Acceso Archival / Lab Box -->
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-8 sm:p-10 shadow-none">
+        <!-- Encabezado de la Tarjeta: Monograma e Identidad -->
+        <div class="flex flex-col items-center text-center mb-8">
+          <!-- Icono de 3 barras verticales de RECETARIO -->
+          <div aria-hidden="true" class="flex items-center gap-1 mb-4">
+            <span class="w-1.5 h-4 bg-primary rounded-full inline-block"></span>
+            <span class="w-1.5 h-4 bg-primary rounded-full inline-block"></span>
+            <span class="w-1.5 h-4 bg-primary rounded-full inline-block"></span>
+          </div>
+
+          <h1 class="text-sm font-bold tracking-[0.25em] uppercase text-primary">
+            RECETARIO
+          </h1>
+
+          <p class="mt-2 text-label-sm tracking-widest text-outline uppercase">
+            SISTEMA DE ADMINISTRACIÓN · V.04
+          </p>
+        </div>
+
+        <!-- Formulario de Acceso -->
+        <form id="admin-login-form" class="space-y-6">
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="block text-label-sm font-medium tracking-widest text-secondary uppercase" for="passphrase">
+                CLAVE DE ACCESO
+              </label>
+              <span class="text-label-sm text-outline tracking-wider">ESTRICTO</span>
+            </div>
+
+            <div class="relative">
+              <input
+                id="passphrase"
+                name="passphrase"
+                type="password"
+                required
+                autocomplete="current-password"
+                placeholder="••••••••••••"
+                class="w-full rounded border border-outline-variant bg-surface-container-low px-3.5 py-2.5 text-body-sm text-on-surface tracking-widest focus:bg-surface-container-lowest focus:border-primary focus:outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          <div id="login-feedback" class="hidden text-label-sm text-error font-mono text-center"></div>
+
+          <div>
+            <button
+              type="submit"
+              id="submit-btn"
+              class="w-full bg-primary hover:opacity-90 active:bg-primary-container text-on-primary text-label-sm tracking-[0.18em] uppercase py-3 px-5 rounded transition-all flex items-center justify-center gap-2 font-medium cursor-pointer"
+            >
+              <span>INGRESAR AL ARCHIVO</span>
+              <span class="text-on-primary/60 font-sans text-xs">→</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Pie de seguridad de la tarjeta -->
+        <div class="mt-8 pt-6 border-t border-surface-container text-center">
+          <p class="text-label-sm tracking-wider text-outline leading-relaxed uppercase">
+            • ACCESO RESTRINGIDO · ARCHIVO PERSONAL
+          </p>
+        </div>
+      </div>
+
+      <!-- Pie exterior y enlace discreto de retorno -->
+      <div class="mt-6 text-center space-y-2">
+        <div class="text-label-sm tracking-widest text-outline uppercase">
+          EDICIÓN DIGITAL MINIMALISTA · 2025
+        </div>
+        <div>
+          <a href="/" class="text-label-sm text-outline hover:text-primary transition-colors tracking-wider uppercase inline-block">
+            ← Volver al archivo
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      function setupLoginForm() {
+        const form = document.getElementById('admin-login-form') as HTMLFormElement | null;
+        const input = document.getElementById('passphrase') as HTMLInputElement | null;
+        const feedback = document.getElementById('login-feedback');
+        const submitBtn = document.getElementById('submit-btn');
+
+        if (!form || !input) return;
+
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const pass = input.value.trim();
+
+          if (!pass) {
+            if (feedback) {
+              feedback.textContent = 'Ingrese una clave válida.';
+              feedback.classList.remove('hidden');
+            }
+            return;
+          }
+
+          if (submitBtn) {
+            submitBtn.setAttribute('disabled', 'true');
+            submitBtn.innerHTML = '<span>ACCEDIENDO...</span>';
+          }
+
+          // Guardar estado de administrador
+          localStorage.setItem('isAdmin', 'true');
+          document.cookie = 'admin=true; path=/; max-age=86400';
+
+          // Redirección con query param a la vista del Home en modo admin
+          window.location.href = '/?admin=true';
+        });
+      }
+
+      document.addEventListener('astro:page-load', setupLoginForm);
+    </script>
+  </body>
+</html>

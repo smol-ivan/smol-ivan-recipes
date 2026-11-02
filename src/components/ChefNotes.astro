@@ -1,0 +1,49 @@
+---
+import type { RecipeExtra } from '../types/recipe';
+
+interface Props {
+  extras?: RecipeExtra[];
+}
+
+const { extras } = Astro.props;
+
+if (!extras || extras.length === 0) {
+  return null;
+}
+
+const iconMap: Record<string, string> = {
+  technique: 'skillet',
+  substitution: 'published_with_changes',
+  equipment: 'precision_manufacturing',
+  note: 'note_alt',
+};
+---
+
+<aside class="mb-space-xl bg-surface-container-lowest border-l-2 border-primary p-6 md:p-8 rounded border-r border-t border-b border-outline-variant/40 shadow-sm flex flex-col gap-6">
+  <div class="flex items-center gap-2">
+    <span class="size-1.5 rounded-full bg-primary"></span>
+    <h3 class="font-mono text-label-md uppercase tracking-widest text-primary font-bold">
+      Notas Técnicas de Cocina & Criterio del Chef
+    </h3>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    {extras.map((extra, index) => {
+      const icon = iconMap[extra.type] || 'info';
+      const indexNumber = String(index + 1).padStart(2, '0');
+      return (
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-2 text-primary font-mono text-label-sm uppercase tracking-wider">
+            <span class="material-symbols-outlined text-sm text-secondary">{icon}</span>
+            <span>
+              {indexNumber} / {extra.related_to}
+            </span>
+          </div>
+          <blockquote class="font-sans text-body-md text-on-surface-variant leading-relaxed italic pl-3 border-l border-outline-variant">
+            “{extra.content}”
+          </blockquote>
+        </div>
+      );
+    })}
+  </div>
+</aside>

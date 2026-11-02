@@ -1,0 +1,279 @@
+---
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import RecipeNutrition from '../../components/RecipeNutrition.astro';
+import RecipeIngredients from '../../components/RecipeIngredients.astro';
+import RecipeSteps from '../../components/RecipeSteps.astro';
+import ChefNotes from '../../components/ChefNotes.astro';
+import { mockRecipes, getRecipeWithMeta } from '../../data/mockRecipes';
+
+// TODO: Reemplazar getStaticPaths con Content Collections cuando esté disponible:
+// export async function getStaticPaths() {
+//   const recipes = await getCollection('recipes');
+//   return recipes.map(recipe => ({ params: { slug: recipe.slug } }));
+// }
+export function getStaticPaths() {
+  return mockRecipes.map((recipe) => ({
+    params: { slug: recipe.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const recipeData = getRecipeWithMeta(slug || '');
+
+if (!recipeData) {
+  return Astro.redirect('/');
+}
+
+const { recipe, meta } = recipeData;
+---
+
+<PublicLayout title={`${recipe.title} — RECETARIO`} description={recipe.description}>
+  <main class="max-w-[1200px] mx-auto px-6 md:px-12 py-8 md:py-12">
+    <div class="flex flex-col w-full">
+      <!-- Breadcrumbs & Barra de utilidades -->
+      <nav aria-label="Ruta de navegación" class="flex flex-wrap items-center justify-between gap-4 py-space-sm mb-space-lg">
+        <a
+          href="/"
+          class="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors group"
+        >
+          <span class="material-symbols-outlined text-base group-hover:-translate-x-1 transition-transform">
+            arrow_back
+          </span>
+          <span class="font-mono text-label-sm tracking-wider uppercase">Volver al archivo</span>
+          <span class="text-outline-variant">/</span>
+          <span class="font-mono text-label-sm tracking-wider uppercase text-secondary">
+            {recipe.category}
+          </span>
+          <span class="text-outline-variant">/</span>
+          <span class="font-mono text-label-sm tracking-wider uppercase text-primary">
+            {meta.code}
+          </span>
+        </a>
+
+        <!-- Controles de utilidad: Escala de porciones, guardado e impresión -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center bg-surface-container-low px-2 py-1 rounded">
+            <label for="scale-input" class="font-mono text-label-sm text-secondary mr-2 cursor-pointer">
+              ESCALA:
+            </label>
+            <div class="inline-flex items-center bg-surface-container-lowest border border-outline-variant rounded px-1.5 py-0.5 shadow-sm">
+              <input
+                id="scale-input"
+                type="number"
+                min="0.5"
+                max="10"
+                step="0.5"
+                value="1"
+                data-base-servings={recipe.servings}
+                class="w-8 bg-transparent border-none p-0 text-center font-mono text-label-sm text-primary focus:ring-0 focus:outline-none"
+              />
+              <span class="font-mono text-label-sm text-secondary select-none">x</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="inline-flex items-center justify-center size-8 rounded bg-surface-container-low text-secondary hover:text-primary hover:bg-surface-container transition-colors"
+            title="Guardar en libreta"
+            aria-label="Guardar en libreta"
+          >
+            <span class="material-symbols-outlined text-sm">bookmark</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="window.print()"
+            class="inline-flex items-center justify-center size-8 rounded bg-surface-container-low text-secondary hover:text-primary hover:bg-surface-container transition-colors"
+            title="Imprimir ficha técnica"
+            aria-label="Imprimir ficha técnica"
+          >
+            <span class="material-symbols-outlined text-sm">print</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Título de la receta y cabecera de metadatos -->
+      <header class="flex flex-col gap-space-md mb-space-xl">
+        <div class="flex items-center gap-2">
+          <span class="size-2 rounded-full bg-primary"></span>
+          <span class="font-mono text-label-sm uppercase tracking-widest text-secondary">
+            Registro Gastronómico · {meta.code}
+          </span>
+        </div>
+
+        <h1 class="font-mono text-headline-xl text-primary tracking-tight max-w-4xl">
+          {recipe.title}
+        </h1>
+
+        <p class="font-sans text-body-lg text-on-surface-variant max-w-3xl leading-relaxed">
+          {recipe.description}
+        </p>
+
+        <!-- Dashboard horizontal de metadatos -->
+        <div class="flex flex-col gap-5 pt-2 border-t border-surface-container">
+          <!-- Nivel 1: Tiempo, Rendimiento, Tags -->
+          <div class="flex flex-wrap items-center gap-y-2 text-label-sm font-mono text-secondary py-2 border-b border-surface-container">
+            <div class="flex items-center gap-1.5 pr-5 border-r border-surface-container-high">
+              <span class="uppercase tracking-wider text-outline">Tiempo:</span>
+              <span class="text-primary font-medium">{meta.total_time_min} min</span>
+              <span class="text-label-sm text-outline">
+                ({recipe.time.prep_min}m prep · {recipe.time.cook_min}m cocción)
+              </span>
+            </div>
+
+            <div class="flex items-center gap-1.5 px-5 border-r border-surface-container-high">
+              <span class="uppercase tracking-wider text-outline">Rendimiento:</span>
+              <span class="text-primary font-medium" id="servings-count">{recipe.servings}</span>
+              <span class="text-primary font-medium">porciones</span>
+            </div>
+
+            <div class="flex items-center gap-2 pl-5">
+              <span class="uppercase tracking-wider text-outline">Index:</span>
+              <div class="inline-flex gap-1.5 text-primary">
+                {recipe.tags.map((tag, i) => (
+                  <>
+                    <span class="hover:text-primary transition-colors">#{tag}</span>
+                    {i < recipe.tags.length - 1 && <span class="text-outline-variant">·</span>}
+                  </>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <!-- Nivel 2: Tarjetas nutricionales -->
+          <RecipeNutrition nutrition={recipe.nutrition} />
+        </div>
+      </header>
+
+      <!-- Fotografía principal (Editorial Hero) -->
+      <figure class="w-full mb-space-xl flex flex-col gap-2">
+        <div class="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded bg-surface-container-high shadow-md">
+          <img
+            src={recipe.image.src}
+            alt={recipe.image.caption || recipe.title}
+            style={`view-transition-name: recipe-img-${recipe.slug};`}
+            class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+          />
+        </div>
+        <figcaption class="flex items-center justify-between px-1 text-secondary font-mono text-label-sm">
+          <span>{recipe.image.caption || `FIG. ${recipe.title.toUpperCase()}`}</span>
+          {recipe.image.target_internal_temp_c && (
+            <span class="hidden sm:inline text-outline">
+              TEMP DE COCCIÓN INTERNA OBJETIVO: {recipe.image.target_internal_temp_c}°C
+            </span>
+          )}
+        </figcaption>
+      </figure>
+
+      <!-- Sección 01: Ingredientes & Proporciones (Mise en place) -->
+      <RecipeIngredients ingredientGroups={recipe.ingredient_groups} />
+
+      <!-- Sección 02: Procedimiento paso a paso -->
+      <RecipeSteps steps={recipe.steps} />
+
+      <!-- Sección 03: Notas técnicas del chef / extras -->
+      <ChefNotes extras={recipe.extras} />
+
+      <!-- Navegación entre recetas (Anterior / Siguiente) -->
+      {(meta.navigation?.prev || meta.navigation?.next) && (
+        <nav
+          aria-label="Navegación entre recetas"
+          class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-space-md bg-surface-container-lowest border border-outline-variant/40 p-6 rounded shadow-sm mb-space-lg"
+        >
+          {meta.navigation.prev ? (
+            <a
+              href={`/recetas/${meta.navigation.prev.slug}`}
+              class="flex items-center gap-3 text-left hover:text-primary transition-colors group w-full sm:w-auto"
+            >
+              <span class="material-symbols-outlined text-secondary group-hover:-translate-x-1 transition-transform">
+                west
+              </span>
+              <div class="flex flex-col">
+                <span class="font-mono text-label-sm uppercase text-secondary tracking-wider">
+                  Receta Anterior
+                </span>
+                <span class="font-mono text-headline-md text-primary text-base">
+                  {meta.navigation.prev.title}
+                </span>
+              </div>
+            </a>
+          ) : (
+            <div class="hidden sm:block" />
+          )}
+
+          <div class="hidden sm:block size-1 rounded-full bg-outline-variant" />
+
+          {meta.navigation.next ? (
+            <a
+              href={`/recetas/${meta.navigation.next.slug}`}
+              class="flex items-center justify-end gap-3 text-right hover:text-primary transition-colors group w-full sm:w-auto"
+            >
+              <div class="flex flex-col">
+                <span class="font-mono text-label-sm uppercase text-secondary tracking-wider">
+                  Siguiente Receta
+                </span>
+                <span class="font-mono text-headline-md text-primary text-base">
+                  {meta.navigation.next.title}
+                </span>
+              </div>
+              <span class="material-symbols-outlined text-secondary group-hover:translate-x-1 transition-transform">
+                east
+              </span>
+            </a>
+          ) : (
+            <div class="hidden sm:block" />
+          )}
+        </nav>
+      )}
+    </div>
+  </main>
+</PublicLayout>
+
+<!-- Scripts interactivos: Escalado numérico y checklist -->
+<script>
+  function setupRecipeInteractions() {
+    const scaleInput = document.getElementById('scale-input') as HTMLInputElement | null;
+    const valueSpans = document.querySelectorAll<HTMLElement>('.ingredient-val');
+    const servingsDisplay = document.getElementById('servings-count');
+
+    if (scaleInput) {
+      const baseServings = parseFloat(scaleInput.getAttribute('data-base-servings') || '2');
+
+      scaleInput.addEventListener('input', () => {
+        let factor = parseFloat(scaleInput.value);
+        if (isNaN(factor) || factor <= 0) factor = 1;
+
+        if (servingsDisplay) {
+          const totalServings = baseServings * factor;
+          servingsDisplay.textContent = totalServings % 1 === 0 ? totalServings.toString() : totalServings.toFixed(1);
+        }
+
+        valueSpans.forEach((span) => {
+          const base = parseFloat(span.getAttribute('data-base') || '0');
+          const calculated = base * factor;
+          span.textContent = calculated % 1 === 0 ? calculated.toString() : calculated.toFixed(1);
+        });
+      });
+    }
+
+    // Checkbox checklist con tachado visual
+    const checkboxes = document.querySelectorAll<HTMLInputElement>('.ingredient-checkbox');
+    checkboxes.forEach((cb) => {
+      cb.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        const parentRow = target.closest('.ingredient-row');
+        const nameText = parentRow?.querySelector('.ingredient-name');
+        if (nameText) {
+          if (target.checked) {
+            nameText.classList.add('line-through', 'text-outline', 'opacity-60');
+          } else {
+            nameText.classList.remove('line-through', 'text-outline', 'opacity-60');
+          }
+        }
+      });
+    });
+  }
+
+  // Soporte para carga inicial y navegación con View Transitions
+  document.addEventListener('astro:page-load', setupRecipeInteractions);
+</script>
