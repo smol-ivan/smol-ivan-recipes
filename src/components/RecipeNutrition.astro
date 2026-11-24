@@ -1,0 +1,96 @@
+---
+import type { RecipeNutrition as NutritionType } from '../types/recipe';
+
+interface Props {
+  nutrition: NutritionType;
+}
+
+const { nutrition } = Astro.props;
+
+// Cálculos derivados (no se guardan en el frontmatter)
+const vdrPercentage = Math.round((nutrition.kcal / 2000) * 100);
+
+const proteinKcal = nutrition.protein_g * 4;
+const carbsKcal = nutrition.carbs_g * 4;
+const fatKcal = nutrition.fat_g * 9;
+const totalMacroKcal = proteinKcal + carbsKcal + fatKcal || 1;
+
+const proteinPct = Math.round((proteinKcal / totalMacroKcal) * 100);
+const carbsPct = Math.round((carbsKcal / totalMacroKcal) * 100);
+const fatPct = Math.max(0, 100 - proteinPct - carbsPct);
+---
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+  <!-- Tarjeta 1: Aporte Energético -->
+  <div class="bg-surface-container-lowest p-5 rounded border border-outline-variant shadow-sm flex flex-col justify-between gap-3">
+    <div class="flex items-center justify-between">
+      <span class="font-mono text-label-sm uppercase tracking-widest text-secondary">
+        Aporte Energético
+      </span>
+      <span class="material-symbols-outlined text-outline text-base">bolt</span>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span class="font-mono text-headline-xl text-primary font-bold tracking-tight">
+        {nutrition.kcal}
+      </span>
+      <span class="font-mono text-label-md text-secondary uppercase">kcal</span>
+    </div>
+    <div class="pt-2 border-t border-surface-container flex items-center justify-between font-mono text-label-sm text-outline">
+      <span>Por porción estandarizada</span>
+      <span class="text-primary font-medium">~{vdrPercentage}% VDR</span>
+    </div>
+  </div>
+
+  <!-- Tarjeta 2: Distribución de Macronutrientes -->
+  <div class="bg-surface-container-lowest p-5 rounded border border-outline-variant shadow-sm flex flex-col justify-between gap-3">
+    <div class="flex items-center justify-between">
+      <span class="font-mono text-label-sm uppercase tracking-widest text-secondary">
+        Distribución de Macronutrientes
+      </span>
+      <span class="material-symbols-outlined text-outline text-base">pie_chart</span>
+    </div>
+
+    <div class="flex items-center justify-between gap-3 py-0.5">
+      <div class="flex flex-col">
+        <span class="font-mono text-headline-md text-primary font-bold">
+          {nutrition.protein_g}g
+        </span>
+        <span class="font-mono text-label-sm text-secondary uppercase">Proteína</span>
+      </div>
+      <span class="text-outline-variant">·</span>
+      <div class="flex flex-col">
+        <span class="font-mono text-headline-md text-primary font-bold">
+          {nutrition.carbs_g}g
+        </span>
+        <span class="font-mono text-label-sm text-secondary uppercase">Carbos</span>
+      </div>
+      <span class="text-outline-variant">·</span>
+      <div class="flex flex-col">
+        <span class="font-mono text-headline-md text-primary font-bold">
+          {nutrition.fat_g}g
+        </span>
+        <span class="font-mono text-label-sm text-secondary uppercase">Grasa</span>
+      </div>
+    </div>
+
+    <!-- Barra visual segmentada proporcional -->
+    <div class="w-full flex flex-col gap-1.5 pt-1 border-t border-surface-container">
+      <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden flex">
+        <div class="bg-primary h-full" style={`width: ${proteinPct}%;`} title={`Proteína ${proteinPct}%`}></div>
+        <div class="bg-secondary h-full" style={`width: ${carbsPct}%;`} title={`Carbohidratos ${carbsPct}%`}></div>
+        <div class="bg-outline-variant h-full" style={`width: ${fatPct}%;`} title={`Grasas ${fatPct}%`}></div>
+      </div>
+      <div class="flex items-center justify-between font-mono text-label-sm text-outline">
+        <span class="flex items-center gap-1">
+          <span class="inline-block size-1.5 rounded-full bg-primary"></span> {proteinPct}% P
+        </span>
+        <span class="flex items-center gap-1">
+          <span class="inline-block size-1.5 rounded-full bg-secondary"></span> {carbsPct}% C
+        </span>
+        <span class="flex items-center gap-1">
+          <span class="inline-block size-1.5 rounded-full bg-outline-variant"></span> {fatPct}% G
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

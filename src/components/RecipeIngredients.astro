@@ -1,0 +1,64 @@
+---
+import type { IngredientGroup } from '../types/recipe';
+
+interface Props {
+  ingredientGroups: IngredientGroup[];
+}
+
+const { ingredientGroups } = Astro.props;
+const alphabet = ['A', 'B', 'C', 'D', 'E', 'F'];
+---
+
+<section class="mb-space-xl flex flex-col gap-space-md">
+  <div class="flex items-baseline justify-between pb-space-xs">
+    <div class="flex items-center gap-3">
+      <span class="font-mono text-headline-md text-primary">01</span>
+      <span class="font-mono text-label-md uppercase tracking-wider text-secondary">
+        / INGREDIENTES & PROPORCIONES
+      </span>
+    </div>
+    <span class="font-mono text-label-sm text-secondary uppercase tracking-widest hidden sm:inline">
+      Checklist de preparación (Mise en Place)
+    </span>
+  </div>
+
+  <!-- Columnas de ingredientes agrupados -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {ingredientGroups.map((group, groupIndex) => {
+      const letter = alphabet[groupIndex] || `${groupIndex + 1}`;
+      return (
+        <div class="bg-surface-container-lowest p-5 rounded border border-outline-variant/40 shadow-sm flex flex-col gap-4">
+          <div class="flex items-center justify-between pb-2 border-b border-surface-container">
+            <h3 class="font-mono text-label-md uppercase tracking-wider text-primary font-bold">
+              {letter}. {group.group}
+            </h3>
+            <span class="font-mono text-label-sm text-secondary uppercase">
+              {group.items.length} {group.items.length === 1 ? 'ÍTEM' : 'ÍTEMS'}
+            </span>
+          </div>
+
+          <ul class="flex flex-col gap-2 font-sans text-body-md text-on-surface">
+            {group.items.map((item) => (
+              <li class="ingredient-row flex items-start justify-between gap-3 p-2 rounded hover:bg-surface-container-low transition-colors cursor-pointer group">
+                <label class="flex items-start gap-2.5 cursor-pointer flex-1">
+                  <input
+                    type="checkbox"
+                    class="ingredient-checkbox mt-1 size-3.5 rounded-sm accent-primary text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                  />
+                  <span class="ingredient-name text-on-surface group-hover:text-primary transition-colors select-none">
+                    {item.name}
+                    {item.note && <span class="text-outline text-body-sm block italic">({item.note})</span>}
+                  </span>
+                </label>
+                <div class="font-mono text-label-md text-primary shrink-0 whitespace-nowrap bg-surface-container px-2 py-0.5 rounded">
+                  <span class="ingredient-val" data-base={item.amount}>{item.amount}</span>{' '}
+                  <span class="ingredient-unit">{item.unit}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    })}
+  </div>
+</section>

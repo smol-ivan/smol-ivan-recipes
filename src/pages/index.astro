@@ -1,11 +1,107 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import PublicLayout from '../layouts/PublicLayout.astro';
+import CategoryTabs from '../components/CategoryTabs.astro';
+import RecipeCard from '../components/RecipeCard.astro';
+import { mockRecipes, recipeCategories } from '../data/mockRecipes';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// TODO: Reemplazar los datos mock con Content Collections:
+// import { getCollection } from 'astro:content';
+// const recipes = await getCollection('recipes');
+const recipes = mockRecipes;
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<PublicLayout title="RECETARIO — Archivo Culinario Minimalista">
+  <main class="max-w-[1200px] mx-auto px-6 md:px-12 py-8 md:py-12">
+    <!-- Encabezado editorial (Inspirado en smol-ivan.xyz) -->
+    <section class="border-b border-surface-container pb-8 md:pb-12 mb-8 md:mb-12">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <div class="inline-flex items-center gap-2 mb-3">
+            <span class="size-1.5 rounded-full bg-primary inline-block"></span>
+            <span class="font-mono text-label-sm uppercase tracking-widest text-outline">
+              Archivo Personal Vol. 04
+            </span>
+          </div>
+          <h1 class="font-mono text-headline-xl text-on-surface font-normal tracking-tight">
+            Recetas de temporada
+          </h1>
+        </div>
+
+        <!-- Micro-metadatos y conteo -->
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6 font-mono text-body-sm text-outline">
+          <div class="flex items-center gap-2">
+            <span class="text-on-surface font-medium">{recipes.length}</span>
+            <span>recetas registradas</span>
+          </div>
+          <span class="text-outline-variant">/</span>
+          <div class="flex items-center gap-1.5">
+            <span class="size-2 rounded-full bg-secondary inline-block animate-pulse"></span>
+            <span class="text-label-sm">Invierno 2025</span>
+          </div>
+
+          <!-- Botón de nueva receta en modo administrador -->
+          <a
+            href="/recetas/nueva"
+            class="admin-only inline-flex items-center gap-2 h-9 px-4 rounded bg-primary hover:opacity-90 text-on-primary font-mono text-label-sm font-medium tracking-wide transition-opacity shadow-sm ml-2"
+          >
+            <span class="material-symbols-outlined text-base">add</span>
+            <span>Nueva receta</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Filtro interactivo de categorías -->
+      <CategoryTabs categories={recipeCategories} activeCategory="Todas" />
+    </section>
+
+    <!-- Grilla de recetas -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+      {recipes.map((recipe) => (
+        <RecipeCard recipe={recipe} />
+      ))}
+    </section>
+
+    <!-- Paginación editorial -->
+    <section class="mt-16 pt-8 border-t border-surface-container flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-label-sm text-outline">
+      <div>
+        <span>Página 01 de 04 — Mostrando {recipes.length} de 24 recetas</span>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button
+          type="button"
+          aria-label="Página anterior"
+          disabled
+          class="size-8 flex items-center justify-center rounded border border-outline-variant text-on-surface opacity-50 cursor-not-allowed"
+        >
+          <svg class="size-4" fill="currentColor" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
+          </svg>
+        </button>
+
+        <button type="button" class="size-8 flex items-center justify-center rounded bg-primary text-on-primary font-bold">
+          1
+        </button>
+        <button type="button" class="size-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:border-on-surface transition-colors">
+          2
+        </button>
+        <button type="button" class="size-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:border-on-surface transition-colors">
+          3
+        </button>
+        <button type="button" class="size-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:border-on-surface transition-colors">
+          4
+        </button>
+
+        <button
+          type="button"
+          aria-label="Página siguiente"
+          class="size-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:border-on-surface transition-colors"
+        >
+          <svg class="size-4" fill="currentColor" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+          </svg>
+        </button>
+      </div>
+    </section>
+  </main>
+</PublicLayout>

@@ -1,0 +1,91 @@
+---
+interface CategoryItem {
+  name: string;
+  count: number;
+}
+
+interface Props {
+  categories: CategoryItem[];
+  activeCategory?: string;
+}
+
+const { categories, activeCategory = 'Todas' } = Astro.props;
+---
+
+<nav aria-label="Filtro de categorías" class="mt-8 md:mt-10">
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none" id="category-tabs-container">
+    {categories.map((cat) => {
+      const isActive = cat.name === activeCategory;
+      return (
+        <button
+          type="button"
+          data-category={cat.name}
+          class={`category-tab group flex items-center gap-2 h-8 px-4 rounded-full font-mono text-label-md tracking-wider transition-all shrink-0 cursor-pointer ${
+            isActive
+              ? 'is-active bg-primary text-on-primary'
+              : 'bg-surface-container-lowest border border-outline-variant hover:border-on-surface text-on-surface'
+          }`}
+        >
+          <span>{cat.name}</span>
+          <span
+            class={`category-count text-label-sm px-1.5 py-0.5 rounded-full transition-colors ${
+              isActive
+                ? 'bg-surface-container-highest/20 text-on-primary'
+                : 'text-outline group-hover:text-on-surface'
+            }`}
+          >
+            {cat.count}
+          </span>
+        </button>
+      );
+    })}
+  </div>
+</nav>
+
+<script>
+  function setupCategoryTabs() {
+    const tabButtons = document.querySelectorAll<HTMLButtonElement>('.category-tab');
+    const recipeCards = document.querySelectorAll<HTMLElement>('[data-recipe-card]');
+
+    if (!tabButtons.length) return;
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const selectedCat = btn.getAttribute('data-category');
+        if (!selectedCat) return;
+
+        // Actualizar apariencia de los botones con clases del tema
+        tabButtons.forEach((b) => {
+          b.classList.remove('is-active', 'bg-primary', 'text-on-primary');
+          b.classList.add('bg-surface-container-lowest', 'border', 'border-outline-variant', 'text-on-surface');
+
+          const countSpan = b.querySelector('.category-count');
+          if (countSpan) {
+            countSpan.className = 'category-count text-label-sm px-1.5 py-0.5 rounded-full transition-colors text-outline group-hover:text-on-surface';
+          }
+        });
+
+        btn.classList.add('is-active', 'bg-primary', 'text-on-primary');
+        btn.classList.remove('bg-surface-container-lowest', 'border', 'border-outline-variant', 'text-on-surface');
+
+        const activeCount = btn.querySelector('.category-count');
+        if (activeCount) {
+          activeCount.className = 'category-count text-label-sm px-1.5 py-0.5 rounded-full transition-colors bg-surface-container-highest/20 text-on-primary';
+        }
+
+        // Filtrar tarjetas en el cliente
+        recipeCards.forEach((card) => {
+          const cardCat = card.getAttribute('data-category');
+          if (selectedCat === 'Todas' || cardCat === selectedCat) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  }
+
+  // Soporte para carga inicial y View Transitions de Astro
+  document.addEventListener('astro:page-load', setupCategoryTabs);
+</script>

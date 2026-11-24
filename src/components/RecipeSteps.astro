@@ -1,0 +1,56 @@
+---
+import type { RecipeStep } from '../types/recipe';
+
+interface Props {
+  steps: RecipeStep[];
+}
+
+const { steps } = Astro.props;
+---
+
+<section class="mb-space-xl flex flex-col gap-space-md">
+  <div class="flex items-baseline justify-between pb-space-xs">
+    <div class="flex items-center gap-3">
+      <span class="font-mono text-headline-md text-primary">02</span>
+      <span class="font-mono text-label-md uppercase tracking-wider text-secondary">
+        / PROCEDIMIENTO PASO A PASO
+      </span>
+    </div>
+    <span class="font-mono text-label-sm text-secondary uppercase tracking-widest hidden sm:inline">
+      Secuencia térmica estricta
+    </span>
+  </div>
+
+  <!-- Línea de tiempo de pasos -->
+  <div class="flex flex-col gap-6">
+    {steps.map((step) => {
+      const stepNumber = String(step.order).padStart(2, '0');
+      return (
+        <article class="bg-surface-container-lowest p-6 md:p-8 rounded border border-outline-variant/40 shadow-sm transition-all hover:shadow-md flex flex-col md:flex-row md:items-start gap-6">
+          <div class="flex md:flex-col items-baseline md:items-center justify-between md:justify-start gap-2 shrink-0 md:w-20">
+            <span class="font-mono text-headline-lg text-primary">{stepNumber}</span>
+            {step.stage_label && (
+              <span class="font-mono text-label-sm text-secondary uppercase tracking-wider">
+                {step.stage_label}
+              </span>
+            )}
+          </div>
+
+          <div class="flex-1 flex flex-col gap-3">
+            {step.condition_label && (
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-container pb-2">
+                <span class="inline-flex items-center gap-1.5 text-secondary font-mono text-label-sm tracking-wider uppercase">
+                  <span class="material-symbols-outlined text-sm">schedule</span>
+                  {step.condition_label}
+                </span>
+              </div>
+            )}
+            <p class="font-sans text-body-md text-on-surface-variant leading-relaxed">
+              {step.instruction}
+            </p>
+          </div>
+        </article>
+      );
+    })}
+  </div>
+</section>
